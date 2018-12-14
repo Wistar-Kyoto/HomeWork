@@ -1,0 +1,53 @@
+﻿1.查询姓“李”的老师的个数
+select * from teacher where tname like '李%';
+2.查询男女生人数个数
+select count(*), sex from student group by sex;
+3.查询同名同姓学生名单，并统计同名人数
+select count(*),sname from student group by sname;
+4.1981年出生的学生名单
+select sname,birthday from student where birthday like '1981%';
+5.查询平均成绩大于60分的同学的学号和平均成绩
+select sid,avg(score) from sc group by sid having avg(score)>=60 ;
+6.求选了课程的学生人数
+select cname, count(*) from course c,sc s  where c.cid = s.cid group by cname;
+7.查询至少选修两门课程的学生学号
+select sid, count(*) from course c,sc s  where c.cid = s.cid group by sid;
+8.查询各科成绩最高和最低的分。以如下形式显示：课程ID，最高分，最低分
+select s.cid,max(score),min(score) from course c,sc s  where c.cid = s.cid group by cid;
+9.统计每门课程的学生选修人数。要求输出课程号和选修人数，查询结果按人数降序排列，若人数相同，按课程号升序排列
+select c.cid  , count(*) from course c,sc s  where c.cid = s.cid group by cid order by count(*)desc;
+
+
+1.打印入职时间超过38年的员工信息
+select empno,ename,job, hiredate from emp where year(now()) - year(hiredate)>=38;
+2.把hiredate列看做是员工的生日,求本月过生日的员工
+select empno,ename,job, hiredate from emp where month(now()) = month(hiredate);
+3.把hiredate列看做是员工的生日,求下月过生日的员工
+select empno,ename,job, hiredate from emp where month(now()) = month(date_add(hiredate,interval -1 month));
+4.求1980年下半年入职的员工
+select empno,ename,job, hiredate from emp where year(hiredate)=1980 and month(hiredate) between 6 and 12;
+5.请用两种的方式查询所有名字长度为4的员工的员工编号,姓名
+select empno,ename from emp where char_length(ename)=4;
+select empno,ename from emp where ename like'____';
+6.显示各种职位的最低工资
+select job,min(sal) from emp group by(job);
+7.求1980年各个月入职的的员工个数
+select extract(month from hiredate),count(ename) from emp where extract(year from hiredate)=1980 group by extract(month from hiredate);
+8.查询每个部门的最高工资
+select deptno,max(sal) from emp group by deptno;
+9.查询每个部门,每种职位的最高工资
+select deptno,job,max(sal) from emp group by deptno,job;
+10.查询各部门的总工资和平均工资
+select deptno,sum(sal),avg(sal) from emp group by deptno;
+11.查询10号部门,20号部门的平均工资（尝试用多种写法）
+select deptno,avg(sal) from emp where deptno  in(10,20) group by deptno ;
+select deptno,avg(sal) from emp group by deptno having (deptno=10) or (deptno=20);
+select deptno,avg(sal) from emp where deptno between 10 and 20 group by deptno;
+12.查询平均工资高于2000元的部门编号和平均工资
+select deptno,avg(sal) from emp group by deptno having avg(sal)>2000;
+13.统计公司里经理的人数
+select job,count(ename) from emp where job='manager';
+14.查询工资最高的3名员工信息
+select * from emp order by sal desc limit 3;
+15.查询工资由高到低第6到第10的员工信息
+select * from emp order by sal desc limit 5,5;
