@@ -1,4 +1,5 @@
-﻿1.查询姓“李”的老师的个数
+﻿单表查询练习
+1.查询姓“李”的老师的个数
 select * from teacher where tname like '李%';
 2.查询男女生人数个数
 select count(*), sex from student group by sex;
@@ -17,7 +18,7 @@ select s.cid,max(score),min(score) from course c,sc s  where c.cid = s.cid group
 9.统计每门课程的学生选修人数。要求输出课程号和选修人数，查询结果按人数降序排列，若人数相同，按课程号升序排列
 select c.cid  , count(*) from course c,sc s  where c.cid = s.cid group by cid order by count(*)desc;
 
-
+单表查询练习
 1.打印入职时间超过38年的员工信息
 select empno,ename,job, hiredate from emp where year(now()) - year(hiredate)>=38;
 2.把hiredate列看做是员工的生日,求本月过生日的员工
@@ -51,3 +52,48 @@ select job,count(ename) from emp where job='manager';
 select * from emp order by sal desc limit 3;
 15.查询工资由高到低第6到第10的员工信息
 select * from emp order by sal desc limit 5,5;
+
+表连接查询练习
+
+1.查询李四学习的课程，考试分数，课程的授课老师
+select student.sname,cname,sc.score,teacher.tname from student inner join sc on(student.sid=sc.sid) inner join course on(sc.cid=course.cid) inner join teacher on(course.tid=teacher.tid) where student.sname='李四';
+2.查询王五有哪些课程没选，显示这些课程名称
+select cname from course where cid not in(select course.cid from student inner join sc on(student.sid=sc.sid) inner join course on(sc.cid=course.cid) where student.sname='王五');
+3.查询所有同学的学号、姓名、选课数、总成绩
+select student.sid,student.sname,count(cname),sum(score) from student inner join sc on(student.sid=sc.sid)inner join course on(sc.cid=course.cid)inner join teacher on(course.tid=teacher.tid) group by course.cname and score,student.sid,student.sname;
+4.查询所有课程成绩都小于等于60分的同学的学号、姓名；
+select student.sid,student.sname from student where student.sid not in (select sc.sid from sc where student.sid=sc.sid and sc.score>60);
+5.查询没有学全所有课的同学的学号、姓名；
+select student.sid,student.sname from student inner join sc on(student.sid=sc.sid)inner join course on(sc.cid=course.cid)group by student.sid having(count(course.cid)<7);
+6.查询每门课程选修人数，格式为课程名称，人数；
+select course.cname,count(*) from student inner join sc on(student.sid=sc.sid)inner join course on(sc.cid=course.cid)group by course.cname;
+7.查询出只选修了一门课程的全部学生的学号和姓名 ；
+select student.sid,student.sname from student inner join sc on(student.sid=sc.sid)inner join course on(sc.cid=course.cid)group by student.sid having count(*)=1;
+8.查询每门课程的平均成绩，结果按平均成绩升序排列，平均成绩相同时，按课程号降序排列
+select avg(score),sc.cid from sc group by cid order by avg(score)asc,cid desc;
+9.查询学生平均成绩大于80的所有学生的学号、姓名和平均成绩
+select student.sid,student.sname,avg(score)from student inner join sc on(student.sid=sc.sid) group by sid,sname having avg(score)>80;
+10.查询课程相同且成绩相同的的学生的学号、课程号、学生成绩
+select s1.sid,s1.cid,s1.score from sc s1 inner join (select cid,score from sc group by cid,score having(count(*)>=2)) s2 on s1.cid=s2.cid and s1.score=s2.score;
+11.查询全部学生都选修的课程的课程号和课程名
+select course.cid,course.cname from sc inner join course on (sc.cid=course.cid)group by course.cid having count(course.cid)=7;
+12.查询两门以上不及格课程的同学的学号及其平均成绩
+select sid,avg(score)from (select sid,cid,score from sc group by sid,cid,score having sc.score < 60)s group by sid,score having count(sid)>=2;
+
+子查询练习
+1.查询所有课程成绩都小于等于60分的同学的学号、姓名
+select student.sid,student.sname from student where student.sid not in (select sc.sid from sc where student.sid=sc.sid and sc.score>60);
+2.查询没有学全所有课的同学的学号、姓名
+select student.sid,student.sname from student where student.sid not in (select sid from sc group by sid having (count(sc.cid)=7));
+3.查询每门课程选修人数，格式为课程名称，人数
+select course.cname,count(*) from course,sc;
+4.查询全部学生都选修的课程的课程号和课程名
+select course.cid,course.cname from course where course.cid in(select sc.cid from sc group by cid having count(cid)=7);
+5.查询两门以上不及格课程的同学的学号及其平均成绩
+select sc.sid,avg(score)from sc where sc.sid in(select sc.sid from sc where sc.score < 60 group by sc.sid having count(sc.sid)>=2)group by sc.sid;
+6.查询2号课程成绩比1号课程成绩低的学生的学号、姓名
+select student.sid,student.sname from student where student.sid in (select m.sid from sc m left join sc n on (m.sid=n.sid)where m.score>n.score and m.cid='1'and n.cid='2');
+7.查询学过1号课程并且也学过编号2号课程的同学的学号、姓名
+select student.sid,student.sname from student where (select count(*) from sc s1 where s1.sid=student.sid and s1.cid = '1')>0 and (select count(*) from sc s2 where s2.sid = student.sid and s2.cid = '2')>0;
+8.查询没学过“叶平”老师课的同学的学号、姓名
+select student.sid,student.sname from student where student.sid not in(select sc.sid from sc,course,teacher where tname='叶平');
